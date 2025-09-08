@@ -82,7 +82,7 @@ jobs:
           uses: actions/checkout@v2
           with:
             submodules: false
-        - uses: actions/download-artifact@v2
+        - uses: actions/download-artifact@v3
           with:
             path: ./bins
         - run: ls -al ./bins/*

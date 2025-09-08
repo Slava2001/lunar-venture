@@ -108,9 +108,9 @@ jobs:
                 platform=${dir#"./bins-"}
                 pkgname=$PROJECT_NAME-$TAG-$platform
                 if [[ $platform =~ "windows" ]]; then
-                    7z a -r ../dist/$pkgname.zip $dir
+                    7z a -r ../dist/$pkgname.zip $dir/*
                 else
-                    tar cJf ../dist/$pkgname.tar.xz $dir
+                    tar cJf ../dist/$pkgname.tar.xz $dir/*
                 fi
             done
         - name: Upload binaries to release

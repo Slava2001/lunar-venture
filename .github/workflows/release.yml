@@ -5,6 +5,9 @@ on:
     tags:
     - 'v[0-9]+.[0-9]+.[0-9]+'
 
+env:
+  BIN_NAME: "lunar-venture"
+
 jobs:
   build:
     name: Build
@@ -55,15 +58,15 @@ jobs:
           args: --release --locked --target ${{ matrix.target }}
       - name: Strip release binary (linux and macos)
         if: matrix.build == 'x86_64-linux' || matrix.build == 'x86_64-macos'
-        run: strip "target/${{ matrix.target }}/release/$CARGO_BIN_NAME"
+        run: strip "target/${{ matrix.target }}/release/$BIN_NAME"
       - name: Build archive
         shell: bash
         run: |
           mkdir dist
           if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            cp "target/${{ matrix.target }}/release/$CARGO_BIN_NAME.exe" "dist/"
+            cp "target/${{ matrix.target }}/release/$BIN_NAME.exe" "dist/"
           else
-            cp "target/${{ matrix.target }}/release/$CARGO_BIN_NAME" "dist/"
+            cp "target/${{ matrix.target }}/release/$BIN_NAME" "dist/"
           fi
       - uses: actions/upload-artifact@v4.6.2
         with:
@@ -79,9 +82,6 @@ jobs:
   #         with:
   #           submodules: false
   #       - uses: actions/download-artifact@v2
-  #         with:
-  #           path: dist
-  #       - run: ls -al ./dist
   #       - run: ls -al bins-*
   #       - name: Calculate tag name
   #         run: |

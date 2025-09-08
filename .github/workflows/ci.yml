@@ -5,7 +5,7 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
-
+    
 jobs:
   fmt:
     name: fmt
@@ -42,22 +42,51 @@ jobs:
       - name: doc
         run: cargo doc --all-features
   build:
-    name: build
-    runs-on: ubuntu-latest
+    name: Build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        build: [x86_64-linux, x86_64-macos, x86_64-windows, wasm]
+        include:
+        - build: x86_64-linux
+          os: ubuntu-latest
+          rust: stable
+          target: x86_64-unknown-linux-gnu
+          cross: false
+        - build: x86_64-macos
+          os: macos-latest
+          rust: stable
+          target: x86_64-apple-darwin
+          cross: false
+        - build: x86_64-windows
+          os: windows-latest
+          rust: stable
+          target: x86_64-pc-windows-msvc
+          cross: false
+        - build: wasm
+          os: ubuntu-latest
+          rust: stable
+          target: wasm32-unknown-unknown
+          cross: true
     steps:
-      - name: Fetch Repository
-        uses: actions/checkout@v5
-      - name: Install stable toolchain
-        uses: actions-rust-lang/setup-rust-toolchain@v1
-      - name: build
-        run: cargo build --all-targets --all-features
-  test:
-    name: test
-    runs-on: ubuntu-latest
-    steps:
-      - name: Fetch Repository
-        uses: actions/checkout@v5
-      - name: Install stable toolchain
-        uses: actions-rust-lang/setup-rust-toolchain@v1
-      - name: test
+      - name: Checkout sources
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: Install ${{ matrix.rust }} toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.rust }}
+          target: ${{ matrix.target }}
+          override: true
+      - name: Build binary
+        uses: actions-rs/cargo@v1
+        with:
+          use-cross: ${{ matrix.cross }}
+          command: build
+          args: --locked --target ${{ matrix.target }}
+      - name: Run test
         run: cargo test --all-targets --all-features
+        

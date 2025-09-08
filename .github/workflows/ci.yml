@@ -80,7 +80,6 @@ jobs:
         with:
           toolchain: ${{ matrix.rust }}
           target: ${{ matrix.target }}
-          profile: minimal
       - name: Build binary
         uses: actions-rs/cargo@v1
         with:

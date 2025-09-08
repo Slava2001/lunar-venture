@@ -32,6 +32,11 @@ jobs:
           rust: stable
           target: x86_64-pc-windows-msvc
           cross: false
+        - build: wasm
+          os: web
+          rust: stable
+          target: wasm32-unknown-unknown
+          cross: true
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
@@ -63,11 +68,13 @@ jobs:
         shell: bash
         run: |
           mkdir dist
+          ext=""
           if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            cp "target/${{ matrix.target }}/release/$BIN_NAME.exe" "dist/"
-          else
-            cp "target/${{ matrix.target }}/release/$BIN_NAME" "dist/"
+            ext=".exe"
+          elif [ "${{ matrix.os }}" = "web" ]; then
+            ext=".wasm"
           fi
+          cp "target/${{ matrix.target }}/release/$BIN_NAME${ext}" "dist/"
       - uses: actions/upload-artifact@v4.6.2
         with:
           name: bins-${{ matrix.build }}

@@ -88,12 +88,11 @@ jobs:
         - run: ls -al ./bins/*
         - name: Calculate tag name
           run: |
-            name=dev
+            name=""
             if [[ $GITHUB_REF == refs/tags/v* ]]; then
               name=${GITHUB_REF:10}
             fi
-            echo "name=${name}" >> $GITHUB_STATE
-            echo TAG=$name >> $GITHUB_ENV
+            echo "TAG=${name}" >> $GITHUB_OUTPUT
           id: tagname
         - name: Upload binaries to release
           uses: svenstaro/upload-release-action@v2
@@ -101,5 +100,5 @@ jobs:
             repo_token: ${{ secrets.GITHUB_TOKEN }}
             file: ./bins/*
             file_glob: true
-            tag: ${{ steps.tagname.outputs.val }}
+            tag: ${{ steps.tagname.outputs.TAG }}
             overwrite: true

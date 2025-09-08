@@ -69,7 +69,8 @@ jobs:
             ext=".wasm"
           fi
           cp "target/${{ matrix.target }}/release/$BIN_NAME${ext}" "dist/"
-      - uses: actions/upload-artifact@v4.6.2
+          chmod +x "dist/$BIN_NAME${ext}"
+      - uses: actions/upload-artifact@v4
         with:
           name: bins-${{ matrix.build }}
           path: dist
@@ -84,21 +85,42 @@ jobs:
             submodules: false
         - uses: actions/download-artifact@v4
           with:
-            path: ./bins
-        - run: ls -al ./bins/*
+            path: ./artifact
+        - name: Show artifact
+          run: ls -al ./artifact/*
         - name: Calculate tag name
+          id: tagname
           run: |
             name=""
             if [[ $GITHUB_REF == refs/tags/v* ]]; then
               name=${GITHUB_REF:10}
             fi
             echo "TAG=${name}" >> $GITHUB_OUTPUT
-          id: tagname
+            echo TAG=$name >> $GITHUB_ENV
+        - name: Build archive
+          shell: bash
+          run: |
+            set -ex
+            shopt -s nullglob
+  
+            rm -rf dist
+            mkdir dist
+            for dir in ./artifact/* ; do
+                platform=${dir#"bins-"}
+                unset exe
+                pkgname=$PROJECT_NAME-$TAG-$platform
+                if [[ $platform =~ "windows" ]]; then
+                    (cd tmp && 7z a -r ../dist/$pkgname.zip $pkgname)
+                else
+                    tar cJf dist/$pkgname.tar.xz -C tmp $pkgname
+                fi
+            done
+        
         - name: Upload binaries to release
           uses: svenstaro/upload-release-action@v2
           with:
             repo_token: ${{ secrets.GITHUB_TOKEN }}
-            file: ./bins/*
+            file: ./dist/*
             file_glob: true
             tag: ${{ steps.tagname.outputs.TAG }}
             overwrite: true

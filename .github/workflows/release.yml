@@ -33,7 +33,7 @@ jobs:
           target: x86_64-pc-windows-msvc
           cross: false
         - build: wasm
-          os: web
+          os: ubuntu-latest
           rust: stable
           target: wasm32-unknown-unknown
           cross: true
@@ -69,9 +69,9 @@ jobs:
         run: |
           mkdir dist
           ext=""
-          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+          if [ "${{ matrix.build }}" = "x86_64-windows" ]; then
             ext=".exe"
-          elif [ "${{ matrix.os }}" = "web" ]; then
+          elif [ "${{ matrix.build }}" = "wasm" ]; then
             ext=".wasm"
           fi
           cp "target/${{ matrix.target }}/release/$BIN_NAME${ext}" "dist/"

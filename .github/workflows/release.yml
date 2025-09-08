@@ -7,7 +7,7 @@ on:
 
 env:
   BIN_NAME: lunar-venture
-  PROJECT_NAME: ${{ env.BIN_NAME }}
+  PROJECT_NAME: lunar-venture
   
 jobs:
   build:

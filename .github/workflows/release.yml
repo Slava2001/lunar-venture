@@ -15,7 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        build: [x86_64-linux, x86_64-macos, x86_64-windows]
+        build: [x86_64-linux, x86_64-macos, x86_64-windows, wasm]
         include:
         - build: x86_64-linux
           os: ubuntu-latest
@@ -50,6 +50,7 @@ jobs:
           target: ${{ matrix.target }}
           override: true
       - name: Run cargo test
+        if: ${{ matrix.build }} != 'wasm'
         uses: actions-rs/cargo@v1
         with:
           use-cross: ${{ matrix.cross }}

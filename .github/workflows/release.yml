@@ -110,7 +110,7 @@ jobs:
                 if [[ $platform =~ "windows" ]]; then
                     7z a -r ../dist/$pkgname.zip $dir/*
                 else
-                    tar -czvf ../dist/$pkgname.tar.gz --directory=$dir $dir/*
+                    (cd $dir && tar -czvf ../../dist/$pkgname.tar.gz *)
                 fi
             done
         - name: Upload binaries to release

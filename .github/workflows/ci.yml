@@ -17,7 +17,7 @@ jobs:
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           components: rustfmt
-      - name: Rustfmt Check
+      - name: Check fmt
         run: cargo fmt --all --check
   clippy:
     name: clippy
@@ -29,7 +29,7 @@ jobs:
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           components: clippy
-      - name: clippy
+      - name: Run clippy
         run: cargo clippy --all-targets --all-features -- -Dwarnings
   doc:
     name: doc
@@ -39,10 +39,11 @@ jobs:
         uses: actions/checkout@v5
       - name: Install stable toolchain
         uses: actions-rust-lang/setup-rust-toolchain@v1
-      - name: doc
+      - name: Check doc
         run: cargo doc --all-features
   build:
     name: Build
+    needs: [fmt, clippy, doc]
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false

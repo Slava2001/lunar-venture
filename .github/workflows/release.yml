@@ -6,8 +6,9 @@ on:
     - 'v[0-9]+.[0-9]+.[0-9]+'
 
 env:
-  BIN_NAME: "lunar-venture"
-
+  BIN_NAME: lunar-venture
+  PROJECT_NAME: ${{ env.BIN_NAME }}
+  
 jobs:
   build:
     name: Build
@@ -100,20 +101,18 @@ jobs:
           run: |
             set -ex
             shopt -s nullglob
-  
             rm -rf dist
             mkdir dist
-            for dir in ./artifact/* ; do
+            cd ./artifact
+            for dir in ./* ; do
                 platform=${dir#"bins-"}
-                unset exe
                 pkgname=$PROJECT_NAME-$TAG-$platform
                 if [[ $platform =~ "windows" ]]; then
-                    (cd tmp && 7z a -r ../dist/$pkgname.zip $pkgname)
+                    7z a -r ../dist/$pkgname.zip $dir
                 else
-                    tar cJf dist/$pkgname.tar.xz -C tmp $pkgname
+                    tar cJf ../dist/$pkgname.tar.xz $dir
                 fi
             done
-        
         - name: Upload binaries to release
           uses: svenstaro/upload-release-action@v2
           with:

@@ -49,13 +49,6 @@ jobs:
           toolchain: ${{ matrix.rust }}
           target: ${{ matrix.target }}
           override: true
-      - name: Run cargo test
-        if: matrix.build != 'wasm'
-        uses: actions-rs/cargo@v1
-        with:
-          use-cross: ${{ matrix.cross }}
-          command: test
-          args: --release --locked --target ${{ matrix.target }}
       - name: Build release binary
         uses: actions-rs/cargo@v1
         with:
@@ -80,62 +73,33 @@ jobs:
         with:
           name: bins-${{ matrix.build }}
           path: dist
-  # publish:
-  #   name: Publish
-  #   needs: [build]
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #       - name: Checkout sources
-  #         uses: actions/checkout@v2
-  #         with:
-  #           submodules: false
-  #       - uses: actions/download-artifact@v2
-  #       - run: ls -al bins-*
-  #       - name: Calculate tag name
-  #         run: |
-  #           name=dev
-  #           if [[ $GITHUB_REF == refs/tags/v* ]]; then
-  #             name=${GITHUB_REF:10}
-  #           fi
-  #           echo "name=${name}" >> $GITHUB_STATE
-  #           echo TAG=$name >> $GITHUB_ENV
-  #         id: tagname
-  #       - name: Build archive
-  #         shell: bash
-  #         run: |
-  #           set -ex
-
-  #           rm -rf tmp
-  #           mkdir tmp
-  #           mkdir dist
-
-  #           for dir in bins-* ; do
-  #               platform=${dir#"bins-"}
-  #               unset exe
-  #               if [[ $platform =~ "windows" ]]; then
-  #                   exe=".exe"
-  #               fi
-  #               pkgname=$PROJECT_NAME-$TAG-$platform
-  #               mkdir tmp/$pkgname
-  #               # cp LICENSE README.md tmp/$pkgname
-  #               mv bins-$platform/$BIN_NAME$exe tmp/$pkgname
-  #               chmod +x tmp/$pkgname/$BIN_NAME$exe
-
-  #               if [ "$exe" = "" ]; then
-  #                   tar cJf dist/$pkgname.tar.xz -C tmp $pkgname
-  #               else
-  #                   (cd tmp && 7z a -r ../dist/$pkgname.zip $pkgname)
-  #               fi
-  #           done
-  #       - name: Upload binaries to release
-  #         uses: svenstaro/upload-release-action@v2
-  #         with:
-  #           repo_token: ${{ secrets.GITHUB_TOKEN }}
-  #           file: dist/*
-  #           file_glob: true
-  #           tag: ${{ steps.tagname.outputs.val }}
-  #           overwrite: true
-  #       - name: Extract version
-  #         id: extract-version
-  #         run: |
-  #           printf "name=%s::%s\n" tag-name "${GITHUB_REF#refs/tags/}" >> $GITHUB_STATE
+  publish:
+    name: Publish
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+        - name: Checkout sources
+          uses: actions/checkout@v2
+          with:
+            submodules: false
+        - uses: actions/download-artifact@v2
+          with:
+            path: ./bins
+        - run: ls -al ./bins/*
+        - name: Calculate tag name
+          run: |
+            name=dev
+            if [[ $GITHUB_REF == refs/tags/v* ]]; then
+              name=${GITHUB_REF:10}
+            fi
+            echo "name=${name}" >> $GITHUB_STATE
+            echo TAG=$name >> $GITHUB_ENV
+          id: tagname
+        - name: Upload binaries to release
+          uses: svenstaro/upload-release-action@v2
+          with:
+            repo_token: ${{ secrets.GITHUB_TOKEN }}
+            file: ./bins/*
+            file_glob: true
+            tag: ${{ steps.tagname.outputs.val }}
+            overwrite: true

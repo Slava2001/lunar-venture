@@ -1,10 +1,8 @@
 //! Lunar venture game
 
-use macroquad::{prelude::*, window};
+use macroquad::prelude::*;
 use std::f32::consts::PI;
 
-const SCREEN_WIDTH: f32 = 800.0;
-const SCREEN_HEIGHT: f32 = 500.0;
 const SKY_BOX_SIZE: f32 = 100.0;
 const MOUSE_SENS: f32 = 2.0;
 const WHEEL_SENS: f32 = 0.05;
@@ -17,7 +15,6 @@ const ROTATION_SPEED: f32 = -2.0 * PI / 120.0;
 
 #[macroquad::main("LunarVenture")]
 async fn main() {
-    window::request_new_screen_size(SCREEN_WIDTH, SCREEN_HEIGHT);
     let skybox_texture: Texture2D = load_texture("assets/skybox.png").await.unwrap();
     let bh_material = load_material(
         ShaderSource::Glsl { vertex: BH_VRX_SHADER, fragment: BH_FRG_SHADER },
@@ -31,7 +28,6 @@ async fn main() {
         },
     )
     .unwrap();
-    bh_material.set_uniform("iResolution", (SCREEN_WIDTH, SCREEN_HEIGHT));
 
     let mut camera = Camera3D { up: Vec3::X, target: Vec3::ZERO, ..Camera3D::default() };
     let mut camera_a: f32 = 0.0;
@@ -67,6 +63,7 @@ async fn main() {
             bh_material.set_uniform("iBhPos", (bh_screen_pos.x, bh_screen_pos.y));
             bh_material.set_uniform("iBhDist", camera_dist);
         }
+        bh_material.set_uniform("iResolution", (screen_width(), screen_height()));
 
         gl_use_material(&bh_material);
         draw_rectangle(-1.0, -1.0, 2.0, 2.0, WHITE);

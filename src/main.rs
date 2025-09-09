@@ -32,7 +32,6 @@ async fn main() {
     )
     .unwrap();
     bh_material.set_uniform("iResolution", (SCREEN_WIDTH, SCREEN_HEIGHT));
-    bh_material.set_uniform("iBhPos", (0f32, 0f32, 0f32));
 
     let mut camera = Camera3D { up: Vec3::X, target: Vec3::ZERO, ..Camera3D::default() };
     let mut camera_a: f32 = 0.0;

@@ -1,0 +1,91 @@
+name: "CI"
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+    
+jobs:
+  fmt:
+    name: Fmt
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch Repository
+        uses: actions/checkout@v5
+      - name: Install stable toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          components: rustfmt
+      - name: Check fmt
+        run: cargo fmt --all --check
+  clippy:
+    name: Clippy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch Repository
+        uses: actions/checkout@v5
+      - name: Install stable toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          components: clippy
+      - name: Run clippy
+        run: cargo clippy --all-targets --all-features -- -Dwarnings
+  doc:
+    name: Doc
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch Repository
+        uses: actions/checkout@v5
+      - name: Install stable toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+      - name: Check doc
+        run: cargo doc --all-features
+  build:
+    name: Build
+    needs: [fmt, clippy, doc]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        build: [x86_64-linux, x86_64-macos, x86_64-windows, wasm]
+        include:
+        - build: x86_64-linux
+          os: ubuntu-latest
+          rust: stable
+          target: x86_64-unknown-linux-gnu
+          cross: false
+        - build: x86_64-macos
+          os: macos-latest
+          rust: stable
+          target: x86_64-apple-darwin
+          cross: false
+        - build: x86_64-windows
+          os: windows-latest
+          rust: stable
+          target: x86_64-pc-windows-msvc
+          cross: false
+        - build: wasm
+          os: ubuntu-latest
+          rust: stable
+          target: wasm32-unknown-unknown
+          cross: true
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: Install ${{ matrix.rust }} toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          target: ${{ matrix.target }}
+      - name: Build binary
+        uses: actions-rs/cargo@v1
+        with:
+          use-cross: ${{ matrix.cross }}
+          command: build
+          args: --locked --target ${{ matrix.target }}
+      - name: Run test
+        run: cargo test --all-targets --all-features
+        
